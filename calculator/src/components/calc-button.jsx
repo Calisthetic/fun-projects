@@ -1,6 +1,9 @@
+import { twMerge } from "tailwind-merge"
+
 export default function CalcButton(params) {
   return (
-    <button className=" rounded-full bg-slate-800 hover:bg-slate-600 transition-colors h-10 w-10"
+    <button className={twMerge("rounded-full transition-colors duration-100 h-10 w-10 "
+    + (params.color ? params.color : " bg-[#232630] ") + " " + (params.hoverColor ? params.hoverColor : " hover:bg-[#53565f] "))}
     onClick={params.action}>{params.children}</button>
   )
 }
