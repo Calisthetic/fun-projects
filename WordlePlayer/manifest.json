@@ -1,0 +1,17 @@
+{
+  "name": "Wordle player",
+  "description": "Wordle player",
+  "version": "0.4",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "https:\/\/*",
+    "scripting"
+  ],
+  "action": {},
+  "background": {
+    "service_worker": "background.js"
+  },
+  "manifest_version": 3,
+  "type": "module"
+}
