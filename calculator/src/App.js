@@ -6,7 +6,7 @@ import { GetLastSymbol, GetSymbolCount } from './utils/text-utils';
 import { CalculateNumeric } from './utils/arithmetic';
 
 function App() {
-  const [currentNumeric, setCurrentNumeric] = useState("√((5*9-0.5^2)+5.25+√(16)+log2(1024))")
+  const [currentNumeric, setCurrentNumeric] = useState()
   const [lastNumeric, setlastNumeric] = useState()
   const [currentSymbol, setCurrentSymbol] = useState()
 
