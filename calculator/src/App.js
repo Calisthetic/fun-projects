@@ -6,7 +6,8 @@ import { GetLastSymbol, GetSymbolCount } from './utils/text-utils';
 import { CalculateNumeric } from './utils/arithmetic';
 
 function App() {
-  const [currentNumeric, setCurrentNumeric] = useState("√((34%5+5))")
+  const [currentNumeric, setCurrentNumeric] = useState("√((5*9-0.5^2)+5.25+√(16)+log2(1024))")
+  const [lastNumeric, setlastNumeric] = useState()
   const [currentSymbol, setCurrentSymbol] = useState()
 
   useEffect(() => {
@@ -17,7 +18,8 @@ function App() {
       if (currentNumeric && GetSymbolCount(currentNumeric, "(") === GetSymbolCount(currentNumeric, ")")) {
         let lastSymbol = GetLastSymbol(currentNumeric)
         if (IsNumeric(lastSymbol) || lastSymbol === ")") {
-          CalculateNumeric(currentNumeric)
+          setlastNumeric(currentNumeric)
+          setCurrentNumeric(CalculateNumeric(currentNumeric))
         }
       }
     } else if (currentSymbol === "+" || currentSymbol === "/" || currentSymbol === "*" 
@@ -37,8 +39,28 @@ function App() {
     } else if (currentSymbol === "(") {
       if (!currentNumeric) {
         setCurrentNumeric(currentSymbol)
-      } else if (!IsNumeric(GetLastSymbol(currentNumeric)) && GetLastSymbol(currentNumeric) !== ")" && GetLastSymbol(currentNumeric) !== ".") {
-        setCurrentNumeric(currentNumeric + currentSymbol)
+      } else {
+        let passedLogSymbols = 0
+        for (let i = currentNumeric.length - 1; i > -1; i--) {
+          if (IsNumeric(currentNumeric[i])) {
+            continue
+          } else if("log".includes(currentNumeric[i])) {
+            passedLogSymbols++
+            if (passedLogSymbols === 3) {
+              setCurrentNumeric(currentNumeric + currentSymbol)
+              setCurrentSymbol(undefined)
+              return
+            }
+          } else {
+            break
+          }
+        }
+        let lastSymbol = GetLastSymbol(currentNumeric)
+        if (IsNumeric(lastSymbol)) {
+          setCurrentNumeric(currentNumeric + "*" + currentSymbol)
+        } else if (lastSymbol !== ")" && lastSymbol !== ".") {
+          setCurrentNumeric(currentNumeric + currentSymbol)
+        }
       }
     } else if (currentSymbol === ")") {
       let lastSymbol = GetLastSymbol(currentNumeric)
@@ -50,6 +72,46 @@ function App() {
       setCurrentNumeric(null)
     } else if (currentSymbol === "del") {
       if (currentNumeric && currentNumeric.length > 1) {
+        if (currentNumeric.length > 1) {
+          let lastSymbols = currentNumeric.slice(-2)
+          if (lastSymbols === "√(") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          }
+        }
+        if (currentNumeric.length > 2) {
+          let lastSymbols = currentNumeric.slice(-3)
+          if (lastSymbols === "ln(") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          } else if (lastSymbols === "log") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          }
+        }
+        if (currentNumeric.length > 3) {
+          let lastSymbols = currentNumeric.slice(-4)
+          if (lastSymbols === "sin(") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          } else if (lastSymbols === "cos(") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          } else if (lastSymbols === "tag(") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          } else if (lastSymbols === "asn(") {
+            setCurrentNumeric(currentNumeric.slice(0, -3))
+            setCurrentSymbol(undefined)
+            return
+          }
+        }
         setCurrentNumeric(currentNumeric.slice(0, -1))
       } else {
         setCurrentNumeric(undefined)
@@ -59,10 +121,10 @@ function App() {
       if (currentNumeric) {
         let lastSymbol = GetLastSymbol(currentNumeric)
         if (!IsNumeric(lastSymbol) && lastSymbol !== ")" && lastSymbol !== ".") {
-          setCurrentNumeric(currentNumeric + currentSymbol + "(")
+          setCurrentNumeric(currentSymbol === "log" ? currentSymbol + "2(" : currentSymbol + "(")
         }
       } else {
-        setCurrentNumeric(currentSymbol + "(")
+        setCurrentNumeric(currentSymbol === "log" ? currentSymbol + "2(" : currentSymbol + "(")
       }
     } else if (currentSymbol === ".") {
       if (currentNumeric && currentNumeric.length > 0) {
@@ -80,11 +142,15 @@ function App() {
         }
       }
     } else if (IsNumeric(currentSymbol)) {
-      let lastSymbol = GetLastSymbol(currentNumeric)
-      if (lastSymbol === ")") {
-        setCurrentNumeric(currentNumeric ? (currentNumeric + "*" + currentSymbol) : currentSymbol)
-      } else {
+      if (!currentNumeric) {
         setCurrentNumeric(currentNumeric ? currentNumeric + currentSymbol : currentSymbol)
+      } else {
+        let lastSymbol = GetLastSymbol(currentNumeric)
+        if (lastSymbol === ")") {
+          setCurrentNumeric(currentNumeric ? (currentNumeric + "*" + currentSymbol) : currentSymbol)
+        } else {
+          setCurrentNumeric(currentNumeric ? currentNumeric + currentSymbol : currentSymbol)
+        }
       }
     }
     
@@ -94,9 +160,11 @@ function App() {
 
   return (
     <div className=" h-[100dvh] flex items-center justify-center">
-      <div className='grid grid-cols-6 gap-2 p-4 rounded-xl bg-[#16191f]'>
-        <div className='col-span-6 text-3xl max-w-[280px] overflow-x-scroll rounded-lg
-        pb-1 pt-2 bg-[#202329] px-2 text-right'>{currentNumeric ?? 0}</div>
+      <div className='grid grid-cols-6 gap-2 p-4 max-w-[300px] rounded-xl bg-[#16191f]'>
+        <div className='col-span-6 text-sm overflow-x-scroll rounded-lg
+        text-[#ccc] px-2 text-right whitespace-nowrap'>{lastNumeric ?? "..."}</div>
+        <div className='col-span-6 text-3xl overflow-x-scroll rounded-lg
+        pb-1 pt-2 bg-[#202329] px-2 text-right whitespace-nowrap'>{currentNumeric ?? 0}</div>
         <CalcButton action={() => setCurrentSymbol("C")} color="bg-[#333640]">C</CalcButton>
         <CalcButton action={() => setCurrentSymbol("!")} color="bg-[#333640]">x!</CalcButton>
         <CalcButton action={() => setCurrentSymbol("(")} color="bg-[#333640]">(</CalcButton>
