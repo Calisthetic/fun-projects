@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --backgroundDark: #131619;
+  --backgroundLight: #f1f3f9;
+  --backgroundHoverDark: #333639;
+  --backgroundHoverLight: #e0e3e9;
+  --backgroundSecondDark: #181b1e;
+  --backgroundSecondLight: #ffffff;
+  --backgroundThirdDark: #232629;
+  --backgroundThirdLight: #e9eaef;
+  --backgroundAccentDark: #ff712b;
+  --backgroundAccentLight: #ff5500;
+  --borderDark: #43464a;
+  --borderLight: #c3c6c9;
+  --textDark: #ffffff;
+  --textLight: #111827;
+  --buttonDark: #ff1515;
+  --buttonLight: #ff2c2c;
+  --buttonHoverDark: #ff4444;
+  --buttonHoverLight: #da0000;
+  --iconDark: #ff1100;
+  --iconLight: #ff1100;
+  --shadowDark: #eeeeee;
+  --shadowLight: #60636c;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body, html {
+  margin: 0px;
+  padding: 0px;
+  min-height: 100vh;
+  background-color: var(--backgroundLight);
+}
+:is(.dark body) {
+  background-color: var(--backgroundDark);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+
+/* Calculator */
+:is(.calculator) {
+  /* width */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 8px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    border-radius: 0px 0px 3px 3px;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #333640;
+    border-radius: 5px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #53565f;
+  }
+}

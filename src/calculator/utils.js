@@ -1,3 +1,7 @@
+export function IsNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 export function GetSymbolCount(str, symbol) {
   let result = 0;
   for (let i = 0; i < str.length; i++) {

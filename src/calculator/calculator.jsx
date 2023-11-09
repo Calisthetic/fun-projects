@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react';
-import './App.css';
-import CalcButton from './components/calc-button';
-import {IsNumeric} from './utils/utils';
-import { GetLastSymbol, GetSymbolCount } from './utils/text-utils';
-import { CalculateNumeric } from './utils/arithmetic';
+import { useEffect, useState } from "react"
+import { GetLastSymbol, GetSymbolCount, IsNumeric } from "./utils"
+import CalcButton from './calc-button';
+import { CalculateNumeric } from './arithmetic';
 
-function App() {
+export default function Calculator(params) {
   const [currentNumeric, setCurrentNumeric] = useState()
   const [lastNumeric, setlastNumeric] = useState()
   const [currentSymbol, setCurrentSymbol] = useState()
@@ -14,10 +12,13 @@ function App() {
     if (!currentSymbol) {
       return
     }
+    if (currentNumeric && currentNumeric.length === 0) {
+      setCurrentNumeric(undefined)
+    }
     if (currentSymbol === "=") {
       if (currentNumeric && GetSymbolCount(currentNumeric, "(") === GetSymbolCount(currentNumeric, ")")) {
         let lastSymbol = GetLastSymbol(currentNumeric)
-        if (IsNumeric(lastSymbol) || lastSymbol === ")") {
+        if (IsNumeric(lastSymbol) || lastSymbol === ")" || lastSymbol === "!") {
           setlastNumeric(currentNumeric)
           setCurrentNumeric(CalculateNumeric(currentNumeric))
         }
@@ -146,7 +147,7 @@ function App() {
         setCurrentNumeric(currentNumeric ? currentNumeric + currentSymbol : currentSymbol)
       } else {
         let lastSymbol = GetLastSymbol(currentNumeric)
-        if (lastSymbol === ")") {
+        if (lastSymbol === ")" || lastSymbol === "!") {
           setCurrentNumeric(currentNumeric ? (currentNumeric + "*" + currentSymbol) : currentSymbol)
         } else {
           setCurrentNumeric(currentNumeric ? currentNumeric + currentSymbol : currentSymbol)
@@ -159,8 +160,8 @@ function App() {
 
 
   return (
-    <div className=" h-[100dvh] flex items-center justify-center">
-      <div className='grid grid-cols-6 gap-2 p-4 max-w-[300px] rounded-xl bg-[#16191f]'>
+    <div className="calculator min-h-[calc(100vh-56px)] flex items-center justify-center">
+      <div className='grid grid-cols-6 gap-2 p-4 max-w-[300px] rounded-xl bg-[#16191b]'>
         <div className='col-span-6 text-sm overflow-x-scroll rounded-lg
         text-[#ccc] px-2 text-right whitespace-nowrap'>{lastNumeric ?? "..."}</div>
         <div className='col-span-6 text-3xl overflow-x-scroll rounded-lg
@@ -197,7 +198,5 @@ function App() {
         <CalcButton action={() => setCurrentSymbol("+")} color="bg-[#fb5154]" hoverColor="hover:bg-[#fb6669]">+</CalcButton>
       </div>
     </div>
-  );
+  )
 }
-
-export default App;

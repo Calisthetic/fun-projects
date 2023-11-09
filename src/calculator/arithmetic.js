@@ -68,14 +68,14 @@ export function CalculateNumeric(str) {
         // Get number
         let num
         let numIndex
-        for (let j = i - 1; j > 0; j--) {
-          if (!IsNumeric(str[j]) && str[j] !== ".") {
-            num = parseFloat(str.slice(j+1, i))
+        for (let j = i - 1; j > -1; j--) {
+          if ((!IsNumeric(str[j]) && str[j] !== ".") || j === 0) {
+            num = parseFloat(str.slice(j === 0 ? 0 : j+1, i))
             numIndex = j
             break;
           }
         }
-        return CalculateNumeric(str.slice(0, numIndex + 1) 
+        return CalculateNumeric(str.slice(0, numIndex === 0 ? 0 : numIndex + 1) 
         + factorial(num) + str.slice(i + 1, str.length))
       } // find action ^*/%+-
       else if (queue.filter(x => x.symbol === str[i]).length > 0) {
@@ -135,8 +135,9 @@ export function CalculateNumeric(str) {
           if (bracketIndex > 0) {
             let lastSymbol = str.slice(bracketIndex-1, bracketIndex)
             if (lastSymbol === "√") {
+              console.log(str.slice(bracketIndex + 1, i))
               return CalculateNumeric(str.slice(0, bracketIndex - 1) 
-              + Math.sqrt(parseInt(str.slice(bracketIndex + 1, i))) + str.slice(i + 1, str.length))
+              + Math.sqrt(parseFloat(str.slice(bracketIndex + 1, i))) + str.slice(i + 1, str.length))
             } // no action before first bracket
             else if (lastSymbol === "(" || queue.filter(x => x.symbol === lastSymbol).length > 0) {
               return CalculateNumeric(str.slice(0, bracketIndex) 
@@ -147,7 +148,7 @@ export function CalculateNumeric(str) {
             let lastSymbols = str.slice(bracketIndex-2, bracketIndex)
             if (lastSymbols === "ln") {
               return CalculateNumeric(str.slice(0, bracketIndex - 2) 
-              + Math.sqrt(parseInt(str.slice(bracketIndex + 1, i))) + str.slice(i + 1, str.length))
+              + Math.sqrt(parseFloat(str.slice(bracketIndex + 1, i))) + str.slice(i + 1, str.length))
             }
           }
           if (bracketIndex > 2) {
