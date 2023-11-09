@@ -1,5 +1,6 @@
 import { Routes, Route, } from "react-router-dom";
 import Calculator from "./calculator/calculator";
+import Graph from "./graph/graph";
 import { Suspense } from "react";
 import LoadingComponent from "./components/loading-component";
 import PageNotFound from "./components/page-not-found";
@@ -16,6 +17,7 @@ function App() {
           <Suspense fallback={<LoadingComponent></LoadingComponent>}>
             <Routes>
               <Route path='calculator' element={<Calculator></Calculator>}></Route>
+              <Route path='graph' element={<Graph></Graph>}></Route>
               <Route path='/' element={<Welcome></Welcome>}></Route>
               <Route path='*' element={<PageNotFound></PageNotFound>}></Route>
             </Routes>
