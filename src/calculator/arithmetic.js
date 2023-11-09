@@ -1,4 +1,4 @@
-import { IsNumeric } from "./utils";
+import { IsNumeric } from "../utils/utils";
 
 function baseLog(n1, n2) {
   return Math.round(Math.log(n2) / Math.log(n1) * 100) / 100;

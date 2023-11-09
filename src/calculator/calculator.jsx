@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { GetLastSymbol, GetSymbolCount, IsNumeric } from "./utils"
+import { GetLastSymbol, GetSymbolCount, IsNumeric } from "../utils/utils"
 import CalcButton from './calc-button';
 import { CalculateNumeric } from './arithmetic';
 
