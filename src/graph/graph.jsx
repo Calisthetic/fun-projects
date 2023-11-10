@@ -12,6 +12,7 @@ export default function Graph() {
       points.push({ x: x, y: y });
     }
 
+    console.log(points)
     return points;
   }
 
@@ -20,9 +21,6 @@ export default function Graph() {
   const [numberOfPoints, setNumbersOfPoints] = useState(0);
   var pointWidth = 8;
   const [pointsOnCircle, setPointsOnCircle] = useState(calculatePointsOnCircle(circleRadius, numberOfPoints));
-  // useEffect(() => {
-  //   setPointsOnCircle(calculatePointsOnCircle(circleRadius, numberOfPoints))
-  // }, [numberOfPoints, circleRadius])
 
   const [pointsOfRibs, setPointsOfRibs] = useState();
   const inputRef = useRef()
@@ -76,7 +74,6 @@ export default function Graph() {
         }
       }
     }
-    console.log(points)
     if (points.length > 0) {
       setPointsOnCircle(calculatePointsOnCircle(circleRadius, numberOfPoints))
       setNumbersOfPoints(numberOfPoints)
@@ -92,17 +89,16 @@ export default function Graph() {
           style={{
             outline: "2px solid red",
             width: circleRadius * 2 + pointWidth * 2,
-            aspectRatio: 1
+            aspectRatio: 1,
+            overflow: "visible"
           }}>
           <circle
             cx={circleRadius + pointWidth}
             cy={circleRadius + pointWidth}
             r={circleRadius}
             fill="green"/>
-
           {pointsOnCircle ? pointsOnCircle.map((item, index) => (
-            <circle
-              key={index}
+            <circle key={index}
               cx={circleRadius + item.x + pointWidth}
               cy={circleRadius + item.y + pointWidth}
               r={pointWidth}
@@ -110,17 +106,46 @@ export default function Graph() {
             />
           )) : null}
           {pointsOfRibs ? pointsOfRibs.map((item, index) => item.n1 === item.n2 ? (
-            <circle></circle>
+            <circle key={index}
+              cx={(pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth)}
+              cy={(pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth)}
+              r={circleRadius / 5}
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+            ></circle>
           ) : (
-            <line
-              key={index}
-              x1={pointsOnCircle[item.n1 - 1].x + circleRadius + pointWidth}
-              x2={pointsOnCircle[item.n2 - 1].x + circleRadius + pointWidth}
-              y1={pointsOnCircle[item.n1 - 1].y + circleRadius + pointWidth}
-              y2={pointsOnCircle[item.n2 - 1].y + circleRadius + pointWidth}
-              stroke="orange"
-              strokeWidth="5"
-            />
+            <>
+              <line key={index}
+                x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                stroke="orange"
+                strokeWidth="5"
+              />
+              {/* cos(a)=(a^2+b^2+c^2)/(2*a*c) */}
+              <text>{Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                (Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)) -
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
+                (2 * Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x) * 
+                (Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2))))}</text>
+              {console.log(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y))}
+              {console.log(
+                Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2))
+              )}
+              <line 
+                x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                stroke="orange"
+                strokeWidth="5"
+              ></line>
+            </>
           )) : null}
         </svg>
         <input className=" my-4 w-full border border-borderLight dark:border-borderDark 
