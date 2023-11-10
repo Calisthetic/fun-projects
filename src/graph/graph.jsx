@@ -12,8 +12,23 @@ export default function Graph() {
       points.push({ x: x, y: y });
     }
 
-    console.log(points)
     return points;
+  }
+  function toRadians (angle) {
+    return angle * (Math.PI / 180);
+  }
+  function toDegrees (angle) {
+    return angle * (180 / Math.PI);
+  }
+
+  function calculatePointFromDirection(pointX, pointY, degrees, direction) {
+    const length = 30
+    let sideY = length * Math.sin(toRadians(degrees)) / Math.sin(toRadians(90))
+    let sideX = length * Math.sin(toRadians(90-degrees)) / Math.sin(toRadians(90))
+    return {
+      x: (direction === 0 || direction === 1) ? pointX - sideX : pointX + sideX, 
+      y: (direction === 1 || direction === 2) ? pointY - sideY : pointY + sideY
+    }
   }
 
   // Пример использования
@@ -87,22 +102,21 @@ export default function Graph() {
         <svg version="1.1"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            outline: "2px solid red",
             width: circleRadius * 2 + pointWidth * 2,
             aspectRatio: 1,
             overflow: "visible"
           }}>
-          <circle
+          <circle className=" stroke-backgroundThirdLight dark:stroke-backgroundThirdDark"
             cx={circleRadius + pointWidth}
             cy={circleRadius + pointWidth}
             r={circleRadius}
-            fill="green"/>
+            strokeWidth="2"
+            fill="none"/>
           {pointsOnCircle ? pointsOnCircle.map((item, index) => (
-            <circle key={index}
+            <circle key={index} className=" fill-buttonLight dark:fill-buttonDark"
               cx={circleRadius + item.x + pointWidth}
               cy={circleRadius + item.y + pointWidth}
               r={pointWidth}
-              fill="red"
             />
           )) : null}
           {pointsOfRibs ? pointsOfRibs.map((item, index) => item.n1 === item.n2 ? (
@@ -116,31 +130,79 @@ export default function Graph() {
             ></circle>
           ) : (
             <>
-              <line key={index}
+              <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
                 x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
                 x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
                 y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
                 y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                stroke="orange"
                 strokeWidth="2"
               />
-              {/* cos(a)=(a^2+b^2-c^2)/(2*a*c) */}
-              <text>{
-                Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
-                - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
-                (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
-                Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x))))
-              }</text>
-              <line 
-                x1={0}
+              <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                x1={calculatePointFromDirection(
+                  pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                  pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                  Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
+                  - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
+                  (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
+                  Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) - 4, 
+                  pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
+                    pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
+                  : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                ).x}
                 x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                y1={0}
+                y1={calculatePointFromDirection(
+                  pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                  pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                  Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
+                  - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
+                  (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
+                  Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) - 4, 
+                  pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
+                    pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
+                  : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                ).y}
+                y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                strokeWidth="3"
+              ></line>
+              <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                x1={calculatePointFromDirection(
+                  pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                  pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                  Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
+                  - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
+                  (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
+                  Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) + 4, 
+                  pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
+                    pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
+                  : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                ).x}
+                x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                y1={calculatePointFromDirection(
+                  pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                  pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                  Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
+                  - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
+                  (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                  Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
+                  Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) + 4, 
+                  pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
+                    pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
+                  : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                ).y}
                 y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
                 stroke="yellow"
-                strokeWidth="5"
+                strokeWidth="3"
               ></line>
             </>
           )) : null}
