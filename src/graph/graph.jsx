@@ -124,14 +124,22 @@ export default function Graph() {
                 stroke="orange"
                 strokeWidth="5"
               />
-              {/* cos(a)=(a^2+b^2+c^2)/(2*a*c) */}
-              <text>{Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+              {/* cos(a)=(a^2+b^2-c^2)/(2*a*c) */}
+              <text>{Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)}</text>
+              <text>{Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y)}</text>
+              <text>{Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+              Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2))}</text>
+              {}
+              {/* <text>{
+              Math.acos(
+                // a^2
+                (Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
                 (Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
                 Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)) -
                 Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
                 (2 * Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x) * 
                 (Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2))))}</text>
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2))))}</text> */}
               {console.log(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y))}
               {console.log(
                 Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +

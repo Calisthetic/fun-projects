@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { GetLastSymbol, GetSymbolCount, IsNumeric } from "../utils/utils"
 import CalcButton from './calc-button';
 import { CalculateNumeric } from './arithmetic';
+import "./styles.css"
 
 export default function Calculator(params) {
   const [currentNumeric, setCurrentNumeric] = useState()
