@@ -122,35 +122,24 @@ export default function Graph() {
                 y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
                 y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
                 stroke="orange"
-                strokeWidth="5"
+                strokeWidth="2"
               />
               {/* cos(a)=(a^2+b^2-c^2)/(2*a*c) */}
-              <text>{Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)}</text>
-              <text>{Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y)}</text>
-              <text>{Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-              Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2))}</text>
-              {}
-              {/* <text>{
-              Math.acos(
-                // a^2
-                (Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                (Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)) -
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
-                (2 * Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x) * 
-                (Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2))))}</text> */}
-              {console.log(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y))}
-              {console.log(
-                Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2))
-              )}
+              <text>{
+                Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
+                - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
+                (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
+                Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
+                Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x))))
+              }</text>
               <line 
-                x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                x1={0}
                 x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                y1={0}
                 y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                stroke="orange"
+                stroke="yellow"
                 strokeWidth="5"
               ></line>
             </>
