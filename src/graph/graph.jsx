@@ -248,7 +248,7 @@ export default function Graph() {
         text-textLight text-sm rounded-lg block p-2 dark:focus:border-textDark
         focus:border-textLight bg-backgroundThirdLight dark:bg-backgroundThirdDark
         dark:placeholder-gray-400 dark:text-textDark"  
-        defaultValue={searchedArcs && searchedArcs.length > 0 ? searchedArcs : 0}
+        defaultValue={searchedArcs && searchedArcs.length > 0 ? searchedArcs : ""}
         ref={inputRef} type="text" placeholder="1 2,2,2 3,3 4" 
         onInput={() => setArcs(inputRef.current.value)}></input>
         {pointsOnCircle && pointsOnCircle.length > 0 ? (
