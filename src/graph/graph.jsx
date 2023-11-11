@@ -43,9 +43,6 @@ export default function Graph() {
   const searchedArcs = searchParams.get("arcs")
   const [arcs, setArcs] = useState(searchedArcs);
   const inputRef = useRef()
-  function InputHandle(val) {
-    setArcs(inputRef.current.value)
-  }
 
   useEffect(() => {
     if (!arcs || arcs.length === 0) {
@@ -102,7 +99,7 @@ export default function Graph() {
       setNumbersOfPoints(numberOfPoints)
       setPointsOfRibs(points)
     }
-  }, [arcs])
+  }, [arcs, circleRadius])
 
   const [isDirectedGraph, setIsDirectedGraph] = useState(true);
   return (
@@ -250,9 +247,11 @@ export default function Graph() {
         <input className=" my-4 w-full border border-borderLight dark:border-borderDark 
         text-textLight text-sm rounded-lg block p-2 dark:focus:border-textDark
         focus:border-textLight bg-backgroundThirdLight dark:bg-backgroundThirdDark
-        dark:placeholder-gray-400 dark:text-textDark" ref={inputRef} defaultValue={searchedArcs && searchedArcs.length > 0 ? searchedArcs : 0}
-        type="text" placeholder="1 2,2,2 3,3 4" onInput={InputHandle}></input>
-        {pointsOnCircle ? (
+        dark:placeholder-gray-400 dark:text-textDark"  
+        defaultValue={searchedArcs && searchedArcs.length > 0 ? searchedArcs : 0}
+        ref={inputRef} type="text" placeholder="1 2,2,2 3,3 4" 
+        onInput={() => setArcs(inputRef.current.value)}></input>
+        {pointsOnCircle && pointsOnCircle.length > 0 ? (
           <>
             <p className="font-medium">Таблица смежности</p>
             <div className=" max-w-xs max-h-[404px] overflow-auto mt-1">
@@ -286,7 +285,7 @@ export default function Graph() {
             </div>
           </>
         ) : null}
-        {pointsOfRibs ? (
+        {pointsOfRibs && pointsOfRibs.length > 0 ? (
           <>
             <p className="font-medium mt-2">Таблица инцидентности</p>
             <div className=" max-w-xs max-h-[404px] overflow-auto mt-1 mb-10">
