@@ -135,7 +135,6 @@ export function CalculateNumeric(str) {
           if (bracketIndex > 0) {
             let lastSymbol = str.slice(bracketIndex-1, bracketIndex)
             if (lastSymbol === "√") {
-              console.log(str.slice(bracketIndex + 1, i))
               return CalculateNumeric(str.slice(0, bracketIndex - 1) 
               + Math.sqrt(parseFloat(str.slice(bracketIndex + 1, i))) + str.slice(i + 1, str.length))
             } // no action before first bracket
