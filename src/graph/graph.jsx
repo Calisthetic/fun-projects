@@ -13,7 +13,6 @@ export default function Graph() {
       var y = radius * Math.sin(i * angleIncrement);
       points.push({ x: x, y: y });
     }
-
     return points;
   }
   function toRadians (angle) {
@@ -97,6 +96,7 @@ export default function Graph() {
     if (points.length > 0) {
       setPointsOnCircle(calculatePointsOnCircle(circleRadius, numberOfPoints))
       setNumbersOfPoints(numberOfPoints)
+      console.log(points)
       setPointsOfRibs(points)
     }
   }, [arcs, circleRadius])
@@ -132,29 +132,81 @@ export default function Graph() {
             strokeWidth="2"
             fill="none"/>
           {pointsOfRibs ? pointsOfRibs.map((item, index) => item.n1 === item.n2 ? (
-            <>
-              <circle key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                cx={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth}
-                cy={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth}
-                r={circleRadius / 5}
-                fill="none"
-                strokeWidth="2"
-              ></circle>
-              <text className="fill-textLight dark:fill-textDark" 
-              x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
-              y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
-                {"e"+(index+1)}
-              </text>
-            </>
+            pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1)).length > 1 ?
+            pointsOfRibs.indexOf(pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1))[0]) !== index ? (
+              <>
+                <circle key={index} className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                  cx={pointsOnCircle[item.n1 - 1].x*1.3 + circleRadius + pointWidth}
+                  cy={pointsOnCircle[item.n1 - 1].y*1.3 + circleRadius + pointWidth}
+                  r={circleRadius / 3.3}
+                  fill="none"
+                  strokeWidth="2"
+                ></circle>
+                <text className="fill-textLight dark:fill-textDark" 
+                x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
+                y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
+                  {"e"+(index+1)}
+                </text>
+              </>
+            ) : (
+              <>
+                <circle key={index} className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                  cx={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth}
+                  cy={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth}
+                  r={circleRadius / 5}
+                  fill="none"
+                  strokeWidth="2"
+                ></circle>
+                <text className="fill-textLight dark:fill-textDark" 
+                x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
+                y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
+                  {"e"+(index+1)}
+                </text>
+              </>
+            ) : (
+              <>
+                <circle key={index} className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                  cx={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth}
+                  cy={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth}
+                  r={circleRadius / 5}
+                  fill="none"
+                  strokeWidth="2"
+                ></circle>
+                <text className="fill-textLight dark:fill-textDark" 
+                x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
+                y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
+                  {"e"+(index+1)}
+                </text>
+              </>
+            )
           ) : (
             <>
-              <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
-                x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
-                y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                strokeWidth="2"
-              />
+              {pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1)).length > 1 ?
+                pointsOfRibs.indexOf(pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1))[0]) !== index ? (
+                  <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                    x1={0}
+                    x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                    y1={0}
+                    y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                    strokeWidth="2"
+                  />
+                ) : (
+                  <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                    x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                    x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                    y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                    y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                    strokeWidth="2"
+                  />
+              ) : (
+                <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                  x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                  x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                  y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                  y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                  strokeWidth="2"
+                />
+              )}
               <text className="fill-textLight dark:fill-textDark" 
               x={(pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2}
               y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2}>
