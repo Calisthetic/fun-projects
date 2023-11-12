@@ -11,7 +11,7 @@ export default function Graph() {
     for (var i = 0; i < numberOfPoints; i++) {
       var x = radius * Math.cos(i * angleIncrement);
       var y = radius * Math.sin(i * angleIncrement);
-      points.push({ x: x, y: y });
+      points.push({ x: Math.round(x), y: Math.round(y) });
     }
     return points;
   }
@@ -32,6 +32,17 @@ export default function Graph() {
     }
   }
 
+  function calculateLineDegrees(x1, y1, x2, y2) {
+    return Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(x1 - x2), 2) +
+    Math.pow(Math.abs(y1 - y2), 2) + Math.pow(Math.abs(x1 - x2), 2) -
+    Math.pow(Math.abs(y1 - y2), 2)) / (2 * Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) +
+    Math.pow(Math.abs(y1 - y2), 2)) * Math.abs(x1 - x2))))
+  }
+
+  function getDirection(x1, y1, x2, y2) {
+    return x1 > x2 ? y1 < y2 ? 2 : 3 : y1 > y2 ? 0 : 1
+  }
+
   var circleRadius = 120;
   const [numberOfPoints, setNumbersOfPoints] = useState(0);
   var pointWidth = 6;
@@ -49,6 +60,7 @@ export default function Graph() {
     }
     window.history.pushState(null, "", `?arcs=${arcs}`)
     
+    // Считывание рёбер со строки ввода
     let points = []
     let num1 = null
     let num2 = null
@@ -105,25 +117,13 @@ export default function Graph() {
   return (
     <div className="graph min-h-[calc(100vh-56px)] flex items-center justify-center w-full">
       <div className="flex flex-col items-center max-w-xs">
-        <div className="flex items-center justify-center w-full gap-x-2">
-          <span className=" font-medium">Ориентированный граф</span>
-          <label className="relative inline-flex items-center mr-1 cursor-pointer h-fit">
-            <input type="checkbox" defaultChecked={isDirectedGraph} onInput={() => setIsDirectedGraph(!isDirectedGraph)} className="sr-only peer"/>
-            <div className="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full 
-            bg-backgroundThirdLight dark:bg-backgroundThirdDark transition-colors
-            after:content-[''] after:absolute after:top-0.5 after:left-[2px] 
-            after:bg-white after:border-gray-300 after:border after:rounded-full 
-            after:h-4 after:w-4 after:transition-all border-borderLight dark:border-borderDark 
-            peer-checked:bg-iconLight peer-checked:dark:bg-iconDark" title="Download files"></div>
-          </label>
-        </div>
         <svg version="1.1"
           xmlns="http://www.w3.org/2000/svg"
           style={{
             width: circleRadius * 2 + pointWidth * 2,
             aspectRatio: 1,
             overflow: "visible",
-            margin: "24px 0px"
+            margin: "60px 0px"
           }}>
           <circle className=" stroke-backgroundThirdLight dark:stroke-backgroundThirdDark"
             cx={circleRadius + pointWidth}
@@ -131,9 +131,11 @@ export default function Graph() {
             r={circleRadius}
             strokeWidth="2"
             fill="none"/>
+          {/* Отрисовка петли */}
           {pointsOfRibs ? pointsOfRibs.map((item, index) => item.n1 === item.n2 ? (
             pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1)).length > 1 ?
             pointsOfRibs.indexOf(pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1))[0]) !== index ? (
+              // Проверка на повторы
               <>
                 <circle key={index} className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
                   cx={pointsOnCircle[item.n1 - 1].x*1.3 + circleRadius + pointWidth}
@@ -143,12 +145,13 @@ export default function Graph() {
                   strokeWidth="2"
                 ></circle>
                 <text className="fill-textLight dark:fill-textDark" 
-                x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
-                y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
+                x={pointsOnCircle[item.n1 - 1].x*1.5 + circleRadius + pointWidth-10}
+                y={pointsOnCircle[item.n1 - 1].y*1.5 + circleRadius + pointWidth+6}>
                   {"e"+(index+1)}
                 </text>
               </>
             ) : (
+              // Самая первая петля среди повторов
               <>
                 <circle key={index} className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
                   cx={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth}
@@ -158,12 +161,13 @@ export default function Graph() {
                   strokeWidth="2"
                 ></circle>
                 <text className="fill-textLight dark:fill-textDark" 
-                x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
-                y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
+                x={pointsOnCircle[item.n1 - 1].x*1.26 + circleRadius + pointWidth-10}
+                y={pointsOnCircle[item.n1 - 1].y*1.26 + circleRadius + pointWidth+10}>
                   {"e"+(index+1)}
                 </text>
               </>
             ) : (
+              // Обычная петля
               <>
                 <circle key={index} className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
                   cx={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth}
@@ -173,24 +177,59 @@ export default function Graph() {
                   strokeWidth="2"
                 ></circle>
                 <text className="fill-textLight dark:fill-textDark" 
-                x={pointsOnCircle[item.n1 - 1].x*1.2 + circleRadius + pointWidth-10}
-                y={pointsOnCircle[item.n1 - 1].y*1.2 + circleRadius + pointWidth+16}>
+                x={pointsOnCircle[item.n1 - 1].x*1.26 + circleRadius + pointWidth-10}
+                y={pointsOnCircle[item.n1 - 1].y*1.26 + circleRadius + pointWidth+10}>
                   {"e"+(index+1)}
                 </text>
               </>
             )
-          ) : (
+          ) : ( // Орисовка ребер
             <>
               {pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1)).length > 1 ?
                 pointsOfRibs.indexOf(pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1))[0]) !== index ? (
-                  <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                    x1={0}
-                    x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                    y1={0}
-                    y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                    strokeWidth="2"
-                  />
+                  // Повторяющиеся ребра
+                  // <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                  //   x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                  //   x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                  //   y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                  //   y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                  //   strokeWidth="2"
+                  // />
+                  <>
+                    <path d={("M " + (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth) + " " + (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth) + "Q " +
+                    (pointsOnCircle[item.n1-1].x*2 + circleRadius + pointWidth+10) + " " +
+                    (pointsOnCircle[item.n1-1].y*2 + circleRadius + pointWidth+10) + ", " +
+                    ((pointsOnCircle[item.n1-1].x*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x*2 + circleRadius + pointWidth)/2+10) + " " +
+                    ((pointsOnCircle[item.n1-1].y*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y*2 + circleRadius + pointWidth)/2+10) + " T " +
+                    (pointsOnCircle[item.n2-1].x + circleRadius + pointWidth) + " " + 
+                    (pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)).toString()} 
+                    strokeWidth="2" fill="none" className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"></path>
+                    <text className="fill-textLight dark:fill-textDark" 
+                    x={(pointsOnCircle[item.n1-1].x*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x*2 + circleRadius + pointWidth)/2}
+                    y={(pointsOnCircle[item.n1-1].y*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y*2 + circleRadius + pointWidth)/2}>
+                      {"e"+(index+1)}
+                    </text>
+                    <text>{calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)}</text>
+                  </>
                 ) : (
+                  // Первое ребро среди повторов
+                  <>
+                    <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                      x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
+                      x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                      y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
+                      y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                      strokeWidth="2"
+                    />
+                    <text className="fill-textLight dark:fill-textDark" 
+                    x={(pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2}
+                    y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2}>
+                      {"e"+(index+1)}
+                    </text>
+                  </>
+              ) : (
+                // Обычные ребра
+                <>
                   <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
                     x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
                     x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
@@ -198,51 +237,28 @@ export default function Graph() {
                     y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
                     strokeWidth="2"
                   />
-              ) : (
-                <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                  x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
-                  x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                  y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
-                  y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                  strokeWidth="2"
-                />
+                  <text className="fill-textLight dark:fill-textDark" 
+                  x={(pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2}
+                  y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2}>
+                    {"e"+(index+1)}
+                  </text>
+                </>
               )}
-              <text className="fill-textLight dark:fill-textDark" 
-              x={(pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2}
-              y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2}>
-                {"e"+(index+1)}
-              </text>
               {isDirectedGraph ? (
                 <>
                   <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
                     x1={calculatePointFromDirection(
                       pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
-                      pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
-                      - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
-                      (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
-                      Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) - 4, 
-                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
-                        pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
-                      : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                      pointsOnCircle[item.n2-1].y + circleRadius + pointWidth, 
+                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4, 
+                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
                     ).x}
                     x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
                     y1={calculatePointFromDirection(
                       pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
                       pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
-                      - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
-                      (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
-                      Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) - 4, 
-                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
-                        pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
-                      : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4,
+                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
                     ).y}
                     y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
                     strokeWidth="3"
@@ -251,31 +267,15 @@ export default function Graph() {
                     x1={calculatePointFromDirection(
                       pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
                       pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
-                      - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
-                      (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
-                      Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) + 4, 
-                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
-                        pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
-                      : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
+                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
                     ).x}
                     x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
                     y1={calculatePointFromDirection(
                       pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
                       pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2)
-                      - Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) / 
-                      (2 * Math.sqrt(Math.pow(Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x), 2) +
-                      Math.pow(Math.abs(pointsOnCircle[item.n1-1].y - pointsOnCircle[item.n2-1].y), 2)) *
-                      Math.abs(pointsOnCircle[item.n1-1].x - pointsOnCircle[item.n2-1].x)))) + 4, 
-                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ?
-                        pointsOnCircle[item.n1-1].y < pointsOnCircle[item.n2-1].y ? 2 : 3
-                      : pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 0 : 1
+                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
+                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
                     ).y}
                     y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
                     stroke="yellow"
@@ -296,7 +296,21 @@ export default function Graph() {
             </>
           )) : null}
         </svg>
-        <input className=" my-4 w-full border border-borderLight dark:border-borderDark 
+        {/* Переключатель на ориентрированный граф */}
+        <div className="flex items-center justify-center w-full gap-x-2">
+          <span className=" font-medium">Ориентированный граф</span>
+          <label className="relative inline-flex items-center mr-1 cursor-pointer h-fit">
+            <input type="checkbox" defaultChecked={isDirectedGraph} onInput={() => setIsDirectedGraph(!isDirectedGraph)} className="sr-only peer"/>
+            <div className="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full 
+            bg-backgroundThirdLight dark:bg-backgroundThirdDark transition-colors
+            after:content-[''] after:absolute after:top-0.5 after:left-[2px] 
+            after:bg-white after:border-gray-300 after:border after:rounded-full 
+            after:h-4 after:w-4 after:transition-all border-borderLight dark:border-borderDark 
+            peer-checked:bg-iconLight peer-checked:dark:bg-iconDark" title="Download files"></div>
+          </label>
+        </div>
+        {/* Строка ввода */}
+        <input className="my-2 w-full border border-borderLight dark:border-borderDark 
         text-textLight text-sm rounded-lg block p-2 dark:focus:border-textDark
         focus:border-textLight bg-backgroundThirdLight dark:bg-backgroundThirdDark
         dark:placeholder-gray-400 dark:text-textDark"  
