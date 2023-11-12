@@ -22,8 +22,10 @@ export default function Graph() {
     return angle * (180 / Math.PI);
   }
 
-  function calculatePointFromDirection(pointX, pointY, degrees, direction) {
-    const length = 30
+  function calculateArrowPointsFromDirection(pointX, pointY, degrees, direction, length) {
+    if (!length) {
+      length = 24
+    }
     let sideY = length * Math.sin(toRadians(degrees)) / Math.sin(toRadians(90))
     let sideX = length * Math.sin(toRadians(90-degrees)) / Math.sin(toRadians(90))
     return {
@@ -31,9 +33,24 @@ export default function Graph() {
       y: (direction === 1 || direction === 2) ? pointY - sideY : pointY + sideY
     }
   }
+  function calculatePointFromDirection(pointX, pointY, degrees, direction, length) {
+    if (!length) {
+      length = 30
+    }
+    let sideY = length * Math.sin(toRadians(degrees)) / Math.sin(toRadians(90))
+    let sideX = length * Math.sin(toRadians(90-degrees)) / Math.sin(toRadians(90))
+    return {
+      x: (direction === 2 || direction === 3) ? pointX - sideX : pointX + sideX, 
+      y: (direction === 0 || direction === 3) ? pointY - sideY : pointY + sideY
+    }
+  }
+
+  function calculateLineLength(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(Math.abs(x1-x2), 2) + Math.pow(Math.abs(y1-y2), 2))
+  }
 
   function calculateLineDegrees(x1, y1, x2, y2) {
-    return Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(x1 - x2), 2) +
+    return (x1 === x2 && y1 === y2) ? 45 : x1 === x2 ? 90 : y1 === y2 ? 0 : Math.round((180 / Math.PI) * Math.acos((Math.pow(Math.abs(x1 - x2), 2) +
     Math.pow(Math.abs(y1 - y2), 2) + Math.pow(Math.abs(x1 - x2), 2) -
     Math.pow(Math.abs(y1 - y2), 2)) / (2 * Math.sqrt(Math.pow(Math.abs(x1 - x2), 2) +
     Math.pow(Math.abs(y1 - y2), 2)) * Math.abs(x1 - x2))))
@@ -42,6 +59,14 @@ export default function Graph() {
   function getDirection(x1, y1, x2, y2) {
     return x1 > x2 ? y1 < y2 ? 2 : 3 : y1 > y2 ? 0 : 1
   }
+
+  let strr = ""
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+      strr+=(i + 1) + " " + (j + 1) + "," + (i + 1) + " " + (j + 1) + ","
+    }
+  }
+  console.log(strr)
 
   var circleRadius = 120;
   const [numberOfPoints, setNumbersOfPoints] = useState(0);
@@ -123,7 +148,7 @@ export default function Graph() {
             width: circleRadius * 2 + pointWidth * 2,
             aspectRatio: 1,
             overflow: "visible",
-            margin: "60px 0px"
+            margin: "80px 0px"
           }}>
           <circle className=" stroke-backgroundThirdLight dark:stroke-backgroundThirdDark"
             cx={circleRadius + pointWidth}
@@ -188,28 +213,319 @@ export default function Graph() {
               {pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1)).length > 1 ?
                 pointsOfRibs.indexOf(pointsOfRibs.filter(x => (x.n1 === item.n1 && x.n2 === item.n2) || (x.n1 === item.n2 && x.n2 === item.n1))[0]) !== index ? (
                   // Повторяющиеся ребра
-                  // <line key={index} className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                  //   x1={pointsOnCircle[item.n1-1].x + circleRadius + pointWidth}
-                  //   x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                  //   y1={pointsOnCircle[item.n1-1].y + circleRadius + pointWidth}
-                  //   y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                  //   strokeWidth="2"
-                  // />
                   <>
-                    <path d={("M " + (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth) + " " + (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth) + "Q " +
-                    (pointsOnCircle[item.n1-1].x*2 + circleRadius + pointWidth+10) + " " +
-                    (pointsOnCircle[item.n1-1].y*2 + circleRadius + pointWidth+10) + ", " +
-                    ((pointsOnCircle[item.n1-1].x*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x*2 + circleRadius + pointWidth)/2+10) + " " +
-                    ((pointsOnCircle[item.n1-1].y*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y*2 + circleRadius + pointWidth)/2+10) + " T " +
-                    (pointsOnCircle[item.n2-1].x + circleRadius + pointWidth) + " " + 
-                    (pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)).toString()} 
+                    <path d={("M " + (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth) + " " + (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth) + " Q " +
+                    calculatePointFromDirection(
+                      pointsOnCircle[item.n1-1].x + circleRadius + pointWidth, 
+                      pointsOnCircle[item.n1-1].y + circleRadius + pointWidth,
+                      pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                      pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 :
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2 === circleRadius + pointWidth ? 
+                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ? 
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 135 : 45 :
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                      calculateLineDegrees(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                      getDirection(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      )
+                    ).x + " " +
+                    calculatePointFromDirection(
+                      pointsOnCircle[item.n1-1].x + circleRadius + pointWidth, 
+                      pointsOnCircle[item.n1-1].y + circleRadius + pointWidth,
+                      pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                      pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 :
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2 === circleRadius + pointWidth ? 
+                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ? 
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 135 : 45 :
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                      calculateLineDegrees(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                      getDirection(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      )
+                    ).y + ", " +
+                    calculatePointFromDirection(
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                      (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                      pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                      pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 :
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2 === circleRadius + pointWidth ? 
+                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ? 
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 135 : 45 :
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                      calculateLineDegrees(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                      getDirection(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      )
+                    ).x + " " +
+                    calculatePointFromDirection(
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                      (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                      pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                      pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 :
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2 === circleRadius + pointWidth ? 
+                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ? 
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 135 : 45 :
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                      calculateLineDegrees(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                      getDirection(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      )
+                    ).y + " T " +
+                    (pointsOnCircle[item.n2-1].x + circleRadius + pointWidth) + " " + (pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)).toString()} 
                     strokeWidth="2" fill="none" className=" stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"></path>
                     <text className="fill-textLight dark:fill-textDark" 
-                    x={(pointsOnCircle[item.n1-1].x*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x*2 + circleRadius + pointWidth)/2}
-                    y={(pointsOnCircle[item.n1-1].y*2 + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y*2 + circleRadius + pointWidth)/2}>
+                    x={calculatePointFromDirection(
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                      (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                      pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                      pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 :
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2 === circleRadius + pointWidth ? 
+                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ? 
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                      calculateLineDegrees(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                      getDirection(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      )
+                    ).x}
+                    y={calculatePointFromDirection(
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                      (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                      pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                      pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 :
+                      (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2 === circleRadius + pointWidth ? 
+                      pointsOnCircle[item.n1-1].x > pointsOnCircle[item.n2-1].x ? 
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                        pointsOnCircle[item.n1-1].y > pointsOnCircle[item.n2-1].y ? 45 : 135 :
+                      calculateLineDegrees(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                      getDirection(
+                        circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                        (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                        (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                      )
+                    ).y-2}>
                       {"e"+(index+1)}
                     </text>
-                    <text>{calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)}</text>
+                    {/* Повёрнутые стрелки повторяющихся рёбер */}
+                    {isDirectedGraph ? (Array(2).fill(null).map((item2, index2) => (
+                      <>
+                        <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                          x1={calculateArrowPointsFromDirection(
+                            pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                            pointsOnCircle[item.n2-1].y + circleRadius + pointWidth, 
+                            circleRadius + pointWidth === pointsOnCircle[item.n2-1].y ? 86 : 
+                            circleRadius + pointWidth === pointsOnCircle[item.n2-1].x ? 86 : 
+                            calculateLineDegrees(
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).x, 
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).y, 
+                              circleRadius + pointWidth, circleRadius + pointWidth) + (index2 === 0 ? -4 : 4), 
+                            getDirection(
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).x, 
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).y, 
+                              circleRadius + pointWidth, circleRadius + pointWidth), 12
+                          ).x}
+                          x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                          y1={calculateArrowPointsFromDirection(
+                            pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                            pointsOnCircle[item.n2-1].y + circleRadius + pointWidth, 
+                            circleRadius + pointWidth === pointsOnCircle[item.n2-1].y ? 86 : 
+                            circleRadius + pointWidth === pointsOnCircle[item.n2-1].x ? 86 : 
+                            calculateLineDegrees(
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).x, 
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).y, 
+                              circleRadius + pointWidth, circleRadius + pointWidth) + (index2 === 0 ? -4 : 4), 
+                            getDirection(
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).x, 
+                              calculatePointFromDirection(
+                                (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2, 
+                                (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2,
+                                pointsOnCircle[item.n1-1].y === pointsOnCircle[item.n2-1].y ? 90 : 
+                                pointsOnCircle[item.n1-1].x === pointsOnCircle[item.n2-1].x ? 0 : 
+                                calculateLineDegrees(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2),
+                                getDirection(
+                                  circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                ), 20 + circleRadius - calculateLineLength(circleRadius + pointWidth, circleRadius + pointWidth, 
+                                  (pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2,
+                                  (pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2
+                                )
+                              ).y, 
+                              circleRadius + pointWidth, circleRadius + pointWidth), 12
+                          ).y}
+                          y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                          strokeWidth="3"
+                        ></line>
+                      </>
+                    ))) : null}
                   </>
                 ) : (
                   // Первое ребро среди повторов
@@ -223,9 +539,49 @@ export default function Graph() {
                     />
                     <text className="fill-textLight dark:fill-textDark" 
                     x={(pointsOnCircle[item.n1-1].x + circleRadius + pointWidth + pointsOnCircle[item.n2-1].x + circleRadius + pointWidth)/2}
-                    y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2}>
+                    y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2-2}>
                       {"e"+(index+1)}
                     </text>
+                    {/* Обычные стрелки */}
+                    {isDirectedGraph ? (
+                      <>
+                        <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                          x1={calculateArrowPointsFromDirection(
+                            pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                            pointsOnCircle[item.n2-1].y + circleRadius + pointWidth, 
+                            calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4, 
+                            getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                          ).x}
+                          x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                          y1={calculateArrowPointsFromDirection(
+                            pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                            pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                            calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4,
+                            getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                          ).y}
+                          y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                          strokeWidth="3"
+                        ></line>
+                        <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                          x1={calculateArrowPointsFromDirection(
+                            pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                            pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                            calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
+                            getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                          ).x}
+                          x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                          y1={calculateArrowPointsFromDirection(
+                            pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                            pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                            calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
+                            getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                          ).y}
+                          y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                          stroke="yellow"
+                          strokeWidth="3"
+                        ></line>
+                      </>
+                    ) : null}
                   </>
               ) : (
                 // Обычные ребра
@@ -242,47 +598,48 @@ export default function Graph() {
                   y={(pointsOnCircle[item.n1-1].y + circleRadius + pointWidth + pointsOnCircle[item.n2-1].y + circleRadius + pointWidth)/2}>
                     {"e"+(index+1)}
                   </text>
+                  {/* Обычные стрелки обычных рёбер */}
+                  {isDirectedGraph ? (
+                    <>
+                      <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                        x1={calculateArrowPointsFromDirection(
+                          pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                          pointsOnCircle[item.n2-1].y + circleRadius + pointWidth, 
+                          calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4, 
+                          getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                        ).x}
+                        x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                        y1={calculateArrowPointsFromDirection(
+                          pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                          pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                          calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4,
+                          getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                        ).y}
+                        y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                        strokeWidth="3"
+                      ></line>
+                      <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
+                        x1={calculateArrowPointsFromDirection(
+                          pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                          pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                          calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
+                          getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                        ).x}
+                        x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
+                        y1={calculateArrowPointsFromDirection(
+                          pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
+                          pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
+                          calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
+                          getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
+                        ).y}
+                        y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
+                        stroke="yellow"
+                        strokeWidth="3"
+                      ></line>
+                    </>
+                  ) : null}
                 </>
               )}
-              {isDirectedGraph ? (
-                <>
-                  <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                    x1={calculatePointFromDirection(
-                      pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
-                      pointsOnCircle[item.n2-1].y + circleRadius + pointWidth, 
-                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4, 
-                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
-                    ).x}
-                    x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                    y1={calculatePointFromDirection(
-                      pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
-                      pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) - 4,
-                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
-                    ).y}
-                    y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                    strokeWidth="3"
-                  ></line>
-                  <line className="stroke-backgroundAccentLight dark:stroke-backgroundAccentDark"
-                    x1={calculatePointFromDirection(
-                      pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
-                      pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
-                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
-                    ).x}
-                    x2={pointsOnCircle[item.n2-1].x + circleRadius + pointWidth}
-                    y1={calculatePointFromDirection(
-                      pointsOnCircle[item.n2-1].x + circleRadius + pointWidth,
-                      pointsOnCircle[item.n2-1].y + circleRadius + pointWidth,
-                      calculateLineDegrees(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y) + 4,
-                      getDirection(pointsOnCircle[item.n1-1].x, pointsOnCircle[item.n1-1].y, pointsOnCircle[item.n2-1].x, pointsOnCircle[item.n2-1].y)
-                    ).y}
-                    y2={pointsOnCircle[item.n2-1].y + circleRadius + pointWidth}
-                    stroke="yellow"
-                    strokeWidth="3"
-                  ></line>
-                </>
-              ) : null}
             </>
           )) : null}
           {pointsOnCircle ? pointsOnCircle.map((item, index) => (
