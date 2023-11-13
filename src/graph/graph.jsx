@@ -18,9 +18,9 @@ export default function Graph() {
   function toRadians (angle) {
     return angle * (Math.PI / 180);
   }
-  function toDegrees (angle) {
-    return angle * (180 / Math.PI);
-  }
+  // function toDegrees (angle) {
+  //   return angle * (180 / Math.PI);
+  // }
 
   function calculateArrowPointsFromDirection(pointX, pointY, degrees, direction, length) {
     if (!length) {
@@ -60,14 +60,6 @@ export default function Graph() {
     return x1 > x2 ? y1 < y2 ? 2 : 3 : y1 > y2 ? 0 : 1
   }
 
-  let strr = ""
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 8; j++) {
-      strr+=(i + 1) + " " + (j + 1) + "," + (i + 1) + " " + (j + 1) + ","
-    }
-  }
-  console.log(strr)
-
   var circleRadius = 120;
   const [numberOfPoints, setNumbersOfPoints] = useState(0);
   var pointWidth = 6;
@@ -78,6 +70,9 @@ export default function Graph() {
   const searchedArcs = searchParams.get("arcs")
   const [arcs, setArcs] = useState(searchedArcs);
   const inputRef = useRef()
+  
+  const [isDirectedGraph, setIsDirectedGraph] = useState(true);
+  const [isInverted, setIsInverted] = useState(false);
 
   useEffect(() => {
     if (!arcs || arcs.length === 0) {
@@ -103,12 +98,14 @@ export default function Graph() {
             num2 = parseInt(arcs.slice(startIndex, i + 1 === arcs.length ? i + 1 : i))
           }
         }
-        if (num1 && num2 === null) {
-          num2 = num1
+        if (num1) {
+          if (numberOfPoints < num1) {
+            numberOfPoints = num1
+          }
         }
         if (num1 && num2) {
-          if (numberOfPoints < num1 || numberOfPoints < num2) {
-            numberOfPoints = num1 < num2 ? num2 : num1
+          if (numberOfPoints < num2) {
+            numberOfPoints = num2
           }
           points.push({n1: num1, n2: num2})
           startIndex = null
@@ -130,15 +127,24 @@ export default function Graph() {
         }
       }
     }
-    if (points.length > 0) {
-      setPointsOnCircle(calculatePointsOnCircle(circleRadius, numberOfPoints))
-      setNumbersOfPoints(numberOfPoints)
-      console.log(points)
+
+    setPointsOnCircle(calculatePointsOnCircle(circleRadius, numberOfPoints))
+    setNumbersOfPoints(numberOfPoints)
+    if (isInverted) {
+      let invertedPoints = []
+      for (let i = 1; i < numberOfPoints + 1; i++) {
+        for (let j = i + 1; j < numberOfPoints + 1; j++) {
+          if (i !== j && points.filter(x => x.n1 === i && x.n2 === j).length === 0 && points.filter(x => x.n1 === j && x.n2 === i).length === 0) {
+            invertedPoints.push({n1: i, n2: j})
+          }
+        }
+      }
+      setPointsOfRibs(invertedPoints)
+    } else {
       setPointsOfRibs(points)
     }
-  }, [arcs, circleRadius])
+  }, [arcs, circleRadius, isInverted])
 
-  const [isDirectedGraph, setIsDirectedGraph] = useState(true);
   return (
     <div className="graph min-h-[calc(100vh-56px)] flex items-center justify-center w-full">
       <div className="flex flex-col items-center max-w-xs">
@@ -658,6 +664,19 @@ export default function Graph() {
           <span className=" font-medium">Ориентированный граф</span>
           <label className="relative inline-flex items-center mr-1 cursor-pointer h-fit">
             <input type="checkbox" defaultChecked={isDirectedGraph} onInput={() => setIsDirectedGraph(!isDirectedGraph)} className="sr-only peer"/>
+            <div className="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full 
+            bg-backgroundThirdLight dark:bg-backgroundThirdDark transition-colors
+            after:content-[''] after:absolute after:top-0.5 after:left-[2px] 
+            after:bg-white after:border-gray-300 after:border after:rounded-full 
+            after:h-4 after:w-4 after:transition-all border-borderLight dark:border-borderDark 
+            peer-checked:bg-iconLight peer-checked:dark:bg-iconDark" title="Download files"></div>
+          </label>
+        </div>
+        {/* Переключатель на инверсию/дополнение */}
+        <div className="flex items-center justify-center w-full gap-x-2">
+          <span className=" font-medium">Дополнение</span>
+          <label className="relative inline-flex items-center mr-1 cursor-pointer h-fit">
+            <input type="checkbox" defaultChecked={isInverted} onInput={() => setIsInverted(!isInverted)} className="sr-only peer"/>
             <div className="w-9 h-5 rounded-full peer peer-checked:after:translate-x-full 
             bg-backgroundThirdLight dark:bg-backgroundThirdDark transition-colors
             after:content-[''] after:absolute after:top-0.5 after:left-[2px] 
