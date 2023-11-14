@@ -708,10 +708,7 @@ export default function Graph() {
                       <TableItem>V{index+1}</TableItem>
                       {pointsOnCircle.map((item2, index2) => (
                         <TableItem key={index2}>
-                          {pointsOfRibs.filter(x => x.n2 === index2+1 && x.n1 === index+1 && x.n1 === x.n2).length > 0 ? 1 : 
-                          pointsOfRibs.filter(x => x.n1 === index+1 && x.n2 === index2+1).length > 0 
-                          && pointsOfRibs.filter(x => x.n1 === index2+1 && x.n2 === index+1).length > 0 ? 2
-                          : pointsOfRibs.filter(x => x.n2 === index2+1 && x.n1 === index+1).length > 0 ? 1 : 0}
+                          {pointsOfRibs.filter(x => x.n2 === index2+1 && x.n1 === index+1).length}
                         </TableItem>
                       ))}
                     </>
